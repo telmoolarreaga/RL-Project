@@ -63,7 +63,7 @@ if __name__ == "__main__":
         load_if_exists=True
     )
 
-    n_trials = 5  # 50 per algorithm
+    n_trials = 150  # 50 per algorithm
     print(f"Running Optuna study with {n_trials} trials...")
     study.optimize(objective, n_trials=n_trials)
 
@@ -81,13 +81,13 @@ if __name__ == "__main__":
     fig = plot_optimization_history(study)
     fig.write_html("results/plots/optimization_history.html")
 
-    #fig = plot_param_importances(study)
-    #fig.write_html("results/plots/param_importances.html")
+    fig = plot_param_importances(study)
+    fig.write_html("results/plots/param_importances.html")
 
     fig = plot_slice(study)
     fig.write_html("results/plots/slice.html")
+    
 
     fig = plot_contour(study)
     fig.write_html("results/plots/contour.html")
 
-    print("Done! All results saved in 'results/' folder.")
