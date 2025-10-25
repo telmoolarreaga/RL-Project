@@ -1,20 +1,39 @@
-# scripts/utils.py
-from gymnasium.envs.toy_text.frozen_lake import generate_random_map, FrozenLakeEnv
-from gymnasium.wrappers import TimeLimit
+import numpy as np
 
-def make_env(size=26, p=0.95, max_steps=800):
+def evaluate_policy(env, Q, policy=None, n_episodes=100):
     """
-    Creates a Frozen Lake environment of given size.
-    
+    Evaluate a Q-table policy in the environment.
+
     Args:
-        size (int): size of the lake (size x size)
-        p (float): probability that a tile is frozen (not a hole)
-        max_steps (int): maximum steps per episode
+        env: Gymnasium environment
+        Q: Q-table (numpy array of shape [n_states, n_actions])
+        policy: Optional function mapping state -> action. If None, greedy policy is used.
+        n_episodes: Number of episodes to evaluate
 
     Returns:
-        env: FrozenLakeEnv wrapped with a TimeLimit
+        avg_reward: Average reward over episodes
+        avg_steps: Average steps per episode
     """
-    desc = generate_random_map(size=size, p=p)  # generate a random map
-    env = FrozenLakeEnv(desc=desc, is_slippery=True)
-    env = TimeLimit(env, max_episode_steps=max_steps)
-    return env
+    total_rewards = []
+    total_steps = []
+
+    for _ in range(n_episodes):
+        state, _ = env.reset()
+        done = False
+        steps = 0
+        total_reward = 0
+
+        while not done:
+            if policy is not None:
+                action = policy(state)
+            else:
+                action = np.argmax(Q[state, :])  # greedy from Q-table
+            next_state, reward, done, truncated, _ = env.step(action)
+            total_reward += reward
+            steps += 1
+            state = next_state
+
+        total_rewards.append(total_reward)
+        total_steps.append(steps)
+
+    return np.mean(total_rewards), np.mean(total_steps)
